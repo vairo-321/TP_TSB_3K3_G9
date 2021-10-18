@@ -15,7 +15,7 @@ public class Test
     {
         // una tabla "corta" con factor de carga pequeño...
         TSBHashtable<Integer, String> ht1 = new TSBHashtable<>(3, 0.2f);
-        System.out.println("Contenido inicial: " + ht1);
+        System.out.println("Contenido inicial: " + ht1.toString());
         
         // algunas inserciones...
         ht1.put(1, "Argentina");
