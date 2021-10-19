@@ -1,0 +1,26 @@
+package clases;
+
+import static org.junit.Assert.*;
+
+public class TSBHashtableDATest {
+
+    @org.junit.Before
+    public void setUp() throws Exception {
+    }
+
+    @org.junit.After
+    public void tearDown() throws Exception {
+    }
+
+    @org.junit.Test
+    public void size() {
+    }
+
+    @org.junit.Test
+    public void isEmpty() {
+    }
+
+    @org.junit.Test
+    public void get() {
+    }
+}

@@ -143,13 +143,159 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> {
         return (x != null)? x.getValue() : null;
     }
 
+    /**
+     * Determina si alguna clave de la tabla está asociada al objeto value que
+     * entra como parámetro. Equivale a contains().
+     * @param value el objeto a buscar en la tabla.
+     * @return true si alguna clave está asociada efectivamente a ese value.
+     */
+    @Override
+    public boolean containsValue(Object value)
+    {
+        return this.contains(value);
+    }
 
+    /**
+     * Asocia el valor (value) especificado, con la clave (key) especificada en
+     * esta tabla. Si la tabla contenía previamente un valor asociado para la
+     * clave, entonces el valor anterior es reemplazado por el nuevo (y en este
+     * caso el tamaño de la tabla no cambia).
+     * @param key la clave del objeto que se quiere agregar a la tabla.
+     * @param value el objeto que se quiere agregar a la tabla.
+     * @return el objeto anteriormente asociado a la clave si la clave ya
+     *         estaba asociada con alguno, o null si la clave no estaba antes
+     *         asociada a ningún objeto.
+     * @throws NullPointerException si key es null o value es null.
+     */
+    @Override
+    public V put(K key, V value)
+    {
+        if(key == null || value == null) throw new NullPointerException("put(): parámetro null");
+
+        int indice = buscarObjeto(key);
+
+        Casilla<Map.Entry<K, V>> x = table[indice];
+
+        V objAntiguo = null;
+
+        if(x.getDato() != null)
+        {
+            count --;
+            objAntiguo = x.getDato().getValue();
+        }
+
+        x.setEstado( "cerrada");
+        Map.Entry<K, V> entry = new Entry<>(key, value);
+        x.setDato(entry);
+        count ++;
+        modCount ++;
+
+        if (reducirTabla()) this.rehash();
+
+        return objAntiguo;
+
+    }
+
+    /**
+     * Elimina de la tabla la clave key (y su correspondiente valor asociado).
+     * El método no hace nada si la clave no está en la tabla.
+     * @param key la clave a eliminar.
+     * @return El objeto al cual la clave estaba asociada, o null si la clave no
+     *         estaba en la tabla.
+     * @throws NullPointerException - if the key is null.
+     */
+    @Override
+    public V remove(Object key)
+    {
+        if(key == null) throw new NullPointerException("remove(): parámetro null");
+
+        int indice = buscarObjeto((K)key);
+
+        if (table[indice].getEstado() == "cerrada")
+        {
+            table[indice].setEstado("tumba");
+            table[indice].setDato(null);
+            count --;
+            modCount ++;
+
+            V objeto = table[indice].getDato().getValue();
+
+            table[indice].setDato(null);
+
+            return objeto;
+
+        }
+        else
+        {
+            return null;
+        }
+
+    }
 
 
     //************************ Redefinición de métodos heredados desde Object.
 
 
     //************************ Métodos específicos de la clase.
+
+    /**
+     * Determina si alguna clave de la tabla está asociada al objeto value que
+     * entra como parámetro. Equivale a containsValue().
+     * @param value el objeto a buscar en la tabla.
+     * @return true si alguna clave está asociada efectivamente a ese value.
+     */
+    public boolean contains(Object value)
+    {
+        /* SE RECORRE LA TABLA SECUENCIALMENTE YA QUE NADA ME GARANTIZA ENCONTRAR
+        EL OBJETO value Antes de ver hasta la ultima casilla, por lo tanto
+        la complejidad es de la magnitud de O(n)
+         */
+        if(value == null) return false;
+
+        for (Casilla<Map.Entry<K, V>> cas : this.table)
+        {
+            if ( cas.getEstado() == "cerrada")
+            {
+                Map.Entry<K, V> entry = (Map.Entry<K, V>) cas.getDato();
+                if (value.equals(entry.getValue())) return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Incrementa el tamaño de la tabla y reorganiza su contenido. Se invoca
+     * automaticamente cuando se detecta que la cantidad Valores en la tabla supera
+     * el 50% de la misma. Esto es asi para garantizar que todos los objetos encuentren
+     * un lugar disponible en la tabla con el algoritmo para evitar las famosas islas de objetos
+     */
+    protected void rehash()
+    {
+        //Primero buscamos la nueva cantidad de indices
+
+        int newLength = siguientePrimo(table.length);
+
+        if(newLength > TSBHashtableDA.MAX_SIZE)
+        {
+            newLength = TSBHashtableDA.MAX_SIZE;
+        }
+
+        Casilla<Map.Entry<K, V>> tablaVieja[] = table;
+
+        table = new Casilla[newLength];
+
+        for (int i = 0; i < tablaVieja.length; i++)
+        {
+            if (tablaVieja[i].getEstado() == "cerrada")
+            {
+                Map.Entry<K, V> entry = tablaVieja[i].getDato();
+                this.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        modCount ++;
+    }
 
 
     //************************ Métodos privados.
@@ -286,10 +432,9 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> {
     private Map.Entry<K, V> buscarObjeto(int indiceInicio, K key)
     {
         int i = indiceInicio;
-        boolean bandera = true;
         int j = 1;
 
-        while (bandera)
+        while (true)
         {
             Casilla casilla = table[i];
             if (casilla.getEstado() != "abierta")
@@ -312,7 +457,59 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> {
                 return null;
             }
         }
-        return null;
+    }
+
+    /*
+        Este metodo busca el objeto antes de realizar el pul, si lo encuentra
+        devuelve su indice en la tabla, y si no devuelve el indice de la primera
+        tumba o casilla abierta encontrada
+     */
+    private int buscarObjeto(K key)
+    {
+        int i = this.h(key.hashCode());
+        int j = 1;
+        int iFinal = i;
+        boolean tumba = false;
+
+        while (true)
+        {
+            Casilla casilla = table[i];
+            if (casilla.getEstado() != "abierta")
+            {
+                if (casilla.getEstado() != "tumba")
+                {
+                    Map.Entry<K, V> entry = (Map.Entry<K, V>) casilla.getDato();
+                    if(key.equals(entry.getKey()))
+                    {
+                        iFinal = i;
+                        return iFinal;
+                    }
+
+                }
+                else
+                {
+                    tumba = true;
+                    iFinal = i;
+                }
+                i = (int)(i + Math.pow(j, 2));
+                if (i >= table.length)
+                {
+                    i = i % table.length;
+                }
+                j ++;
+            }
+            else
+            {
+                if (!tumba) iFinal = i;
+                return iFinal;
+            }
+        }
+    }
+
+    private boolean reducirTabla()
+    {
+        if (count > table.length / 2) return true;
+        return false;
     }
 
 }
