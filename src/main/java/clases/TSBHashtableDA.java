@@ -70,12 +70,6 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> implements Cloneable
 
     //************************ Implementación de métodos especificados por Map.
 
-    //Unico metodo abstracto de la clase AbstractMap<>
-    public Set<Map.Entry<K, V>> entrySet() {
-
-        return entrySet;
-    }
-
     /**
      * Elimina todo el contenido de la tabla, de forma de dejarla vacía. En esta
      * implementación además, el arreglo de soporte vuelve a tener el tamaño que
@@ -226,26 +220,94 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> implements Cloneable
 
     }
 
-    public V removeIndice(int indice) {
-        if (indice < 0 || indice >= table.length) throw new NullPointerException("remove(): Rango no valido");
+    //----
 
-        if (table[indice].getEstado() == "cerrada") {
-            table[indice].setEstado("tumba");
-            count--;
-            modCount++;
-
-            V objeto = table[indice].getDato().getValue();
-
-            table[indice].setDato(null);
-
-            return objeto;
-
-        } else {
-            return null;
+    /**
+     * Retorna un Set (conjunto) a modo de vista de todas las claves (key)
+     * contenidas en la tabla. El conjunto está respaldado por la tabla, por lo
+     * que los cambios realizados en la tabla serán reflejados en el conjunto, y
+     * viceversa. Si la tabla es modificada mientras un iterador está actuando
+     * sobre el conjunto vista, el resultado de la iteración será indefinido
+     * (salvo que la modificación sea realizada por la operación remove() propia
+     * del iterador, o por la operación setValue() realizada sobre una entrada
+     * de la tabla que haya sido retornada por el iterador). El conjunto vista
+     * provee métodos para eliminar elementos, y esos métodos a su vez
+     * eliminan el correspondiente par (key, value) de la tabla (a través de las
+     * operaciones Iterator.remove(), Set.remove(), removeAll(), retainAll()
+     * y clear()). El conjunto vista no soporta las operaciones add() y
+     * addAll() (si se las invoca, se lanzará una UnsuportedOperationException).
+     * @return un conjunto (un Set) a modo de vista de todas las claves
+     *         mapeadas en la tabla.
+     */
+    @Override
+    public Set<K> keySet()
+    {
+        if(keySet == null)
+        {
+            // keySet = Collections.synchronizedSet(new KeySet());
+            keySet = new TSBHashtableDA.KeySet();
         }
-
+        return keySet;
     }
 
+    /**
+     * Retorna una Collection (colección) a modo de vista de todos los valores
+     * (values) contenidos en la tabla. La colección está respaldada por la
+     * tabla, por lo que los cambios realizados en la tabla serán reflejados en
+     * la colección, y viceversa. Si la tabla es modificada mientras un iterador
+     * está actuando sobre la colección vista, el resultado de la iteración será
+     * indefinido (salvo que la modificación sea realizada por la operación
+     * remove() propia del iterador, o por la operación setValue() realizada
+     * sobre una entrada de la tabla que haya sido retornada por el iterador).
+     * La colección vista provee métodos para eliminar elementos, y esos métodos
+     * a su vez eliminan el correspondiente par (key, value) de la tabla (a
+     * través de las operaciones Iterator.remove(), Collection.remove(),
+     * removeAll(), removeAll(), retainAll() y clear()). La colección vista no
+     * soporta las operaciones add() y addAll() (si se las invoca, se lanzará
+     * una UnsuportedOperationException).
+     * @return una colección (un Collection) a modo de vista de todas los
+     *         valores mapeados en la tabla.
+     */
+    @Override
+    public Collection<V> values()
+    {
+        if(values==null)
+        {
+            // values = Collections.synchronizedCollection(new ValueCollection());
+            values = new TSBHashtableDA.ValueCollection();
+        }
+        return values;
+    }
+
+    /**
+     * Retorna un Set (conjunto) a modo de vista de todos los pares (key, value)
+     * contenidos en la tabla. El conjunto está respaldado por la tabla, por lo
+     * que los cambios realizados en la tabla serán reflejados en el conjunto, y
+     * viceversa. Si la tabla es modificada mientras un iterador está actuando
+     * sobre el conjunto vista, el resultado de la iteración será indefinido
+     * (salvo que la modificación sea realizada por la operación remove() propia
+     * del iterador, o por la operación setValue() realizada sobre una entrada
+     * de la tabla que haya sido retornada por el iterador). El conjunto vista
+     * provee métodos para eliminar elementos, y esos métodos a su vez
+     * eliminan el correspondiente par (key, value) de la tabla (a través de las
+     * operaciones Iterator.remove(), Set.remove(), removeAll(), retainAll()
+     * and clear()). El conjunto vista no soporta las operaciones add() y
+     * addAll() (si se las invoca, se lanzará una UnsuportedOperationException).
+     * @return un conjunto (un Set) a modo de vista de todos los objetos
+     *         mapeados en la tabla.
+     */
+    @Override
+    public Set<Map.Entry<K, V>> entrySet()
+    {
+        if(entrySet == null)
+        {
+            // entrySet = Collections.synchronizedSet(new EntrySet());
+            entrySet = new TSBHashtableDA.EntrySet();
+        }
+        return entrySet;
+    }
+
+    //-----
 
     //************************ Redefinición de métodos heredados desde Object.
 
@@ -395,6 +457,26 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> implements Cloneable
         }
 
         modCount++;
+    }
+
+    public V removeIndice(int indice) {
+        if (indice < 0 || indice >= table.length) throw new NullPointerException("remove(): Rango no valido");
+
+        if (table[indice].getEstado() == "cerrada") {
+            table[indice].setEstado("tumba");
+            count--;
+            modCount++;
+
+            V objeto = table[indice].getDato().getValue();
+
+            table[indice].setDato(null);
+
+            return objeto;
+
+        } else {
+            return null;
+        }
+
     }
 
 
@@ -622,8 +704,8 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> implements Cloneable
 
                 Map.Entry<K, V> objeto = null;
 
-                for ( int i = casilla_actual ; i < t.length; i++) {
-                    if (i == -1) continue;
+                for ( int i = casilla_actual + 1; i < t.length; i++) {
+                    //if (i == -1) continue;
 
                     if ( t[i].getEstado() == "cerrada")
                     {
@@ -812,8 +894,8 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> implements Cloneable
 
                 Map.Entry<K, V> objeto = null;
 
-                for ( int i = casilla_actual ; i < t.length; i++) {
-                    if (i == -1) continue;
+                for ( int i = casilla_actual + 1; i < t.length; i++) {
+                    //if (i == -1) continue;
 
                     if ( t[i].getEstado() == "cerrada")
                     {
@@ -967,8 +1049,8 @@ public class TSBHashtableDA<K, V> extends AbstractMap<K, V> implements Cloneable
 
                 Map.Entry<K, V> objeto = null;
 
-                for ( int i = casilla_actual ; i < t.length; i++) {
-                    if (i == -1) continue;
+                for ( int i = casilla_actual +1 ; i < t.length; i++) {
+                    //if (i == -1) continue;
 
                     if ( t[i].getEstado() == "cerrada")
                     {

@@ -134,17 +134,13 @@ public class TSBHashtableDATest {
     public void whenPutAllCalledWithNull_thenThrow() {
         table.putAll(null);
     }
-}
-/*
+
     @Test(expected = NullPointerException.class)
     public void whenPutAllCalledWithMapWithNullKeys_thenThrow() {
         Map<String, Integer> m = Map.of("a", 1, null, 2);
         table.putAll(m);
     }
 
-
-
-    /*
 
     @Test(expected = NullPointerException.class)
     public void whenPutAllCalledWithMapWithNullValues_thenThrow() {
@@ -260,6 +256,7 @@ public class TSBHashtableDATest {
         assertNotEquals(table.hashCode(), other.hashCode());
     }
 
+    /*
     @Test
     public void testClone() {
         addTestData();
@@ -273,6 +270,8 @@ public class TSBHashtableDATest {
     }
 
 
+     */
+
 //    Object clone()
 
 
@@ -281,13 +280,13 @@ public class TSBHashtableDATest {
 
         public EntryVerifier(List<Object> values) {
             entries = new ArrayList<>(values.size());
-            for (Object value: values) {
+            for (Object value : values) {
                 entries.add(new Entry(value));
             }
         }
 
         public void check(Object entry) {
-            for (Entry e: entries) {
+            for (Entry e : entries) {
                 if (e.entry.equals(entry)) {
                     if (e.checked) {
                         fail("Entry duplicated");
@@ -300,7 +299,7 @@ public class TSBHashtableDATest {
         }
 
         public void assertAllChecked() {
-            for (Entry e: entries) {
+            for (Entry e : entries) {
                 if (!e.checked) {
                     fail("Entry not checked: " + e.entry);
                 }
@@ -316,4 +315,5 @@ public class TSBHashtableDATest {
             this.entry = entry;
         }
     }
-*/
+
+}
