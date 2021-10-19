@@ -1,5 +1,7 @@
 package clases;
 
+import java.util.Objects;
+
 public class Casilla <E>{
     private String estado;
     private E dato;
@@ -39,4 +41,23 @@ public class Casilla <E>{
         return dato.toString();
     }
 
+    @Override
+    protected Object clone() throws CloneNotSupportedException
+    {
+        Casilla<E> cas = new Casilla();
+        cas.setEstado(this.getEstado());
+        cas.setDato(this.getDato());
+        return cas;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.estado);
+        if (this.estado == "cerrada")
+        {
+            hash += 61 * hash + Objects.hashCode(this.dato);
+        }
+        return hash;
+    }
 }
