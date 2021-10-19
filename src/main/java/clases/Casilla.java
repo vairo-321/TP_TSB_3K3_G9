@@ -33,5 +33,10 @@ public class Casilla <E>{
         return this.dato;
     }
 
+    public  String toString()
+    {
+        if (dato == null) return "( ,  )";
+        return dato.toString();
+    }
 
 }
